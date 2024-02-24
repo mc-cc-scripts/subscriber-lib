@@ -76,6 +76,6 @@ describe("Subscribe", function()
         assert.are.equal("", triggered)
         sub[1] = "test2"
         assert.are.equal("test2", triggered);
-        assert.are.equal("Modify2", event);
+        assert.are.equal("Modify", event);
     end)
 end)
