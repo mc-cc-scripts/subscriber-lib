@@ -27,55 +27,62 @@
 ---@field equal function
 assert = assert
 
+local subscriber = require("../subscriber")
+
 describe("Subscribe", function()
-    it("Should trigger on Add", function()
-        local subscriber = require("../subscriber")
+    it("Table behaves normal", function()
+        local t = { [1] = "test", [2] = "test2" }
+        assert.are.equal("test", t[1])
+        local sub = subscriber(t)
+        t[3] = "test3"
+
+        -- old table should still have the same values
+        assert.are.equal("test", t[1])
+        assert.are.equal("test2", t[2])
+        assert.are.equal("test3", t[3])
+
+        -- the subscriber should not have the values of the table
+        assert.are.equal(nil, sub[1])
+        assert.are.equal(nil, sub[2])
+        assert.are.equal(nil, sub[3])
+    end)
+
+    it("Delete should trigger", function()
+        local t = { [1] = "test", [2] = "test2" }
+        local sub = subscriber(t)
+        sub.subscribe(function(event, data)
+            assert.are.equal("Delete", event)
+            assert.are.equal(1, data[1])
+            assert.are.equal(nil, data[2])
+            assert.are.equal("test", data[3])
+        end)
+        t[1] = nil
+        assert.are.equal(nil, t[1])
+        assert.are.equal("test2", t[2])
+    end)
+
+    it("Modify should trigger", function()
+        local t = { [1] = "test", [2] = "test2" }
+        local sub = subscriber(t)
+        sub.subscribe(function(event, data)
+            assert.are.equal("Modify", event)
+            assert.are.equal("test3", data[2])
+            assert.is_true("test" == data[3])
+        end)
+        t[1] = "test3"
+        assert.are.equal("test3", t[1])
+        assert.are.equal("test2", t[2])
+    end)
+    it("Insert should trigger", function()
         local t = {}
         local sub = subscriber(t)
-        local triggered = ""
-        local event = ""
-        print(type(sub))
-        sub.subscribe(function(e, keyValue)
-            triggered = keyValue[2]
-            event = e
+        sub.subscribe(function(event, data)
+            assert.are.equal("Insert", event)
+            assert.True(("test" == data[2]) or ("test2" == data[2]))
         end)
-        assert.are.equal("", triggered);
-        sub[1] = "test"
-        assert.are.equal("test", triggered);
-        assert.are.equal("Modify", event);
-    end)
-
-    it("Should trigger on Delete", function()
-        local subscriber = require("../subscriber")
-        local t = { [1] = "test" }
-        local sub = subscriber(t)
-        local triggered = "indeed"
-        local event = ""
-        sub.subscribe(function(e, keyValue)
-            print("Delete", e, keyValue[2])
-            triggered = keyValue[2]
-            event = e
-        end)
-        assert.are.equal("indeed", triggered)
-        sub[1] = nil
-        assert.are.equal(nil, triggered);
-        assert.are.equal("Delete", event);
-    end)
-
-    it("Should trigger on Modify", function()
-        local subscriber = require("../subscriber")
-        local t = { [1] = "test" }
-        local sub = subscriber(t)
-        local triggered = ""
-        local event = ""
-        sub.subscribe(function(e, keyValue)
-            print("Modify", e, keyValue[2])
-            triggered = keyValue[2]
-            event = e
-        end)
-        assert.are.equal("", triggered)
-        sub[1] = "test2"
-        assert.are.equal("test2", triggered);
-        assert.are.equal("Modify", event);
+        t[1] = "test"
+        assert.are.equal("test", t[1])
+        t[2] = "test2"
+        assert.are.equal("test2", t[2])
     end)
 end)
