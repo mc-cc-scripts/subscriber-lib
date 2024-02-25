@@ -5,6 +5,8 @@ A library which allows to listen to changes in any table
 # Example
 
 ```lua
+local subscriber = require("../subscriber")
+
 local t = { [1] = "example", [2] = "example 2" }
 local sub = subscriber(t)
 sub.subscribe(function(event, data)
