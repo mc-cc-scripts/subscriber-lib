@@ -85,4 +85,17 @@ describe("Subscribe", function()
         t[2] = "test2"
         assert.are.equal("test2", t[2])
     end)
+    it("Unsubscribe should work", function()
+        local t = { [1] = "test", [2] = "test2" }
+        local sub = subscriber(t)
+        local id = sub.subscribe(function(event, data)
+            assert.are.equal("Modify", event)
+            assert.are.equal("new Test", data[2])
+        end)
+        t[1] = "new Test"
+        assert.are.equal("new Test", t[1])
+        sub.unsubscribe(id)
+        t[2] = "new Test 2"
+        assert.are.equal("new Test 2", t[2])
+    end)
 end)

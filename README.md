@@ -13,7 +13,7 @@ local t = {
 }
 local s = createSubscriber(t)
 
-s.subscribe(function(event, data)
+local id = s.subscribe(function(event, data)
     print(event) -- 1. "Insert" | "Modify" | "Delete"
     print(data[1]) -- 2. key of the Value that changed
     print(data[2]) -- 3. value
@@ -37,4 +37,6 @@ t[3] = "example 4"
 -- 2. 3
 -- 3. "example 4"
 -- 4. nil
+
+s.unsubscribe(id)
 ```

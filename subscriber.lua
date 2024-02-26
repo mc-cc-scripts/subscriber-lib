@@ -15,21 +15,29 @@ end
 
 ---@param object table The table which the subscribtion should be created for
 local CreateSubscriber = function(object)
+    ---@Class Subscriber
     local subscriber = {
         obj = deepcopy(object),
-        listeners = {}
+        listeners = {},
+        listenerID = 1
     }
     resetTableKeys(object)
 
 
     function subscriber.subscribe(listener)
-        table.insert(subscriber.listeners, listener)
+        subscriber.listeners[subscriber.listenerID] = listener
+        subscriber.listenerID = subscriber.listenerID + 1
+        return subscriber.listenerID - 1
     end
 
     function subscriber.notify(event, data)
         for _, listener in ipairs(subscriber.listeners) do
             listener(event, data)
         end
+    end
+
+    function subscriber.unsubscribe(ID)
+        subscriber.listeners[ID] = nil
     end
 
     local mt = {
