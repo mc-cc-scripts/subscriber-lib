@@ -38,5 +38,7 @@ t[3] = "example 4"
 -- 3. "example 4"
 -- 4. nil
 
-s.unsubscribe(id)
+s.unsubscribe(id) --removes the specified subscription
+
+s.unsubscribeAll() -- removes all subscriptions and rewrites all values from the proxy back to the original table
 ```
