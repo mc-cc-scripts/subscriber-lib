@@ -27,13 +27,13 @@
 ---@field equal function
 assert = assert
 
-local subscriber = require("../subscriber")
+local observer = require("../observer")
 
 describe("Subscribe", function()
     it("Table behaves normal", function()
         local t = { [1] = "test", [2] = "test2" }
         assert.are.equal("test", t[1])
-        local sub = subscriber(t)
+        local sub = observer(t)
         t[3] = "test3"
 
         -- old table should still have the same values
@@ -48,8 +48,8 @@ describe("Subscribe", function()
     end)
     it("Delete should trigger", function()
         local t = { [1] = "test", [2] = "test2" }
-        local sub = subscriber(t)
-        sub.subscribe(function(event, data)
+        local o = observer(t)
+        o.subscribe(function(event, data)
             assert.are.equal("Delete", event)
             assert.are.equal(1, data[1])
             assert.are.equal(nil, data[2])
@@ -61,8 +61,8 @@ describe("Subscribe", function()
     end)
     it("Modify should trigger", function()
         local t = { [1] = "test", [2] = "test2" }
-        local sub = subscriber(t)
-        sub.subscribe(function(event, data)
+        local o = observer(t)
+        o.subscribe(function(event, data)
             assert.are.equal("Modify", event)
             assert.are.equal("test3", data[2])
             assert.is_true("test" == data[3])
@@ -73,8 +73,8 @@ describe("Subscribe", function()
     end)
     it("Insert should trigger", function()
         local t = {}
-        local sub = subscriber(t)
-        sub.subscribe(function(event, data)
+        local o = observer(t)
+        o.subscribe(function(event, data)
             assert.are.equal("Insert", event)
             assert.True(("test" == data[2]) or ("test2" == data[2]))
         end)
@@ -85,26 +85,26 @@ describe("Subscribe", function()
     end)
     it("Unsubscribe should work", function()
         local t = { [1] = "test", [2] = "test2" }
-        local sub = subscriber(t)
-        local id = sub.subscribe(function(event, data)
+        local o = observer(t)
+        local id = o.subscribe(function(event, data)
             assert.are.equal("Modify", event)
             assert.are.equal("new Test", data[2])
         end)
         t[1] = "new Test"
         assert.are.equal("new Test", t[1])
-        sub.unsubscribe(id)
+        o.unsubscribe(id)
         t[2] = "new Test 2"
         assert.are.equal("new Test 2", t[2])
     end)
     describe("Multiple subscribers", function()
         it("Multiple Subscribtions shoud work", function()
             local t = { [1] = "test", [2] = "test2" }
-            local sub = subscriber(t)
+            local o = observer(t)
             local calls = 0
-            sub.subscribe(function(_, _)
+            o.subscribe(function(_, _)
                 calls = calls + 1
             end)
-            sub.subscribe(function(event, data)
+            o.subscribe(function(event, data)
                 calls = calls + 1
                 assert.are.equal("Modify", event)
                 assert.are.equal("new Test 2", data[2])
@@ -115,17 +115,17 @@ describe("Subscribe", function()
         end)
         it("Unsubscribing once should work", function()
             local t = { [1] = "test", [2] = "test2" }
-            local sub = subscriber(t)
+            local o = observer(t)
             local calls = 0
-            local id = sub.subscribe(function(_, _)
+            local id = o.subscribe(function(_, _)
                 calls = calls + 1
             end)
-            sub.subscribe(function(event, data)
+            o.subscribe(function(event, data)
                 calls = calls + 1
                 assert.are.equal("Modify", event)
                 assert.are.equal("new Test 2", data[2])
             end)
-            sub.unsubscribe(id)
+            o.unsubscribe(id)
             t[2] = "new Test 2"
             assert.are.equal("new Test 2", t[2])
             assert.are.equal(1, calls)
@@ -134,8 +134,8 @@ describe("Subscribe", function()
     describe("Metatables", function()
         it("Metatable should be set", function()
             local t = { [1] = "test" }
-            local sub = subscriber(t)
-            assert.False(sub.originalMetaTable == getmetatable(t))
+            local o = observer(t)
+            assert.False(o.originalMetaTable == getmetatable(t))
         end)
         it("Metatable should be reset", function()
             local t = { [1] = "test" }
@@ -150,17 +150,17 @@ describe("Subscribe", function()
                 end
             }
             setmetatable(t, metatable)
-            local sub = subscriber(t)
+            local o = observer(t)
             local newCalls = 0
-            sub.subscribe(function(event, data)
+            o.subscribe(function(event, data)
                 assert.are.equal("Modify", event)
                 assert.are.equal("new Test", data[2])
                 newCalls = newCalls + 1
             end)
             t[1] = "new Test"
             assert.are.equal(1, newCalls)
-            sub.unsubscribeAll()
-            sub = nil
+            o.unsubscribeAll()
+            o = nil
             t[2] = "new Test 2"
             assert.are.equal(1, oldCall)
             assert.are.equal(metatable.__newindex, getmetatable(t).__newindex)
@@ -172,16 +172,16 @@ describe("Subscribe", function()
     describe("Resetting", function()
         it("Should reset and then Restart", function()
             local t = { [1] = "test", [2] = "test2" }
-            local sub = subscriber(t)
-            sub.subscribe(function(event, data)
+            local o = observer(t)
+            o.subscribe(function(event, data)
                 assert.are.equal("Modify", event)
                 assert.are.equal("new Test", data[2])
             end)
             t[1] = "new Test"
             assert.are.equal("new Test", t[1])
-            local t2 = sub.unsubscribeAll()
+            local t2 = o.unsubscribeAll()
             assert.are.equal("new Test", t[1])
-            sub.subscribe(function(event, data)
+            o.subscribe(function(event, data)
                 assert.are.equal("Modify", event)
                 assert.are.equal("new Test 2", data[2])
             end)

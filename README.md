@@ -1,17 +1,17 @@
-# subscriber-lib
+# Observer-lib
 
 A library which allows to listen to changes in any table
 
 # Example
 
 ```lua
-local createSubscriber = require("../subscriber")
+local createObserver = require("../observer")
 
 local t = {
     [1] = "example",
     [2] = "example 2"
 }
-local s = createSubscriber(t)
+local s = createObserver(t)
 
 local id = s.subscribe(function(event, data)
     print(event) -- 1. "Insert" | "Modify" | "Delete"
